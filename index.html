@@ -350,8 +350,7 @@
           <h3>무료 상담 신청</h3>
           <p class="lead">필수 항목만 입력하셔도 접수할 수 있습니다.</p>
 
-          <form id="consultForm" action="https://formspree.io/f/xdenqvqb" method="POST" target="formspree_sink">
-            <iframe name="formspree_sink" id="formspree_sink" title="상담접수 전송" style="display:none"></iframe>
+          <form id="consultForm" action="https://formspree.io/f/xdenqvqb" method="POST">
             <input type="hidden" name="_subject" value="[법률사무소 후성] 부천 채권추심 신규 상담">
             <input type="hidden" name="유입페이지" value="부천채권추심 랜딩페이지">
 
@@ -441,30 +440,49 @@
         else this.value = v.slice(0, 3) + '-' + v.slice(3, 7) + '-' + v.slice(7);
       });
 
-      form.addEventListener('submit', function(e) {
-        if (!form.checkValidity()) {
-          e.preventDefault();
-          form.reportValidity();
-          return;
-        }
+     
+        form.addEventListener('submit', async function(e) {
+  e.preventDefault();
 
-        button.disabled = true;
-        button.textContent = '접수 중입니다...';
-        status.className = 'form-status';
-        status.textContent = '';
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
 
-        // 실제 전송은 hidden iframe으로 진행되고,
-        // 화면은 별도 이동 없이 한글 완료 메시지만 표시합니다.
-        window.setTimeout(function() {
-          status.textContent = '상담 신청이 완료되었습니다. 확인 후 연락드리겠습니다.';
-          status.className = 'form-status success';
-          button.textContent = '상담 신청 완료';
-          button.disabled = true;
-          form.reset();
-          status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 900);
-      });
-    })();
+  button.disabled = true;
+  button.textContent = '접수 중입니다...';
+  status.className = 'form-status';
+  status.textContent = '';
+
+  try {
+    const response = await fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (response.ok) {
+      status.textContent = '상담 신청이 완료되었습니다. 확인 후 연락드리겠습니다.';
+      status.className = 'form-status success';
+      button.textContent = '상담 신청 완료';
+      form.reset();
+    } else {
+      throw new Error('전송 실패');
+    }
+  } catch (error) {
+    status.textContent = '상담 신청 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+    status.className = 'form-status error';
+    button.disabled = false;
+    button.textContent = '다시 상담 신청하기';
+  }
+
+  status.scrollIntoView({
+    behavior: 'smooth',
+    block: 'nearest'
+  });
+});
   </script>
 </body>
 </html>
