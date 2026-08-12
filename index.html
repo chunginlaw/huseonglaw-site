@@ -350,7 +350,7 @@
           <h3>무료 상담 신청</h3>
           <p class="lead">필수 항목만 입력하셔도 접수할 수 있습니다.</p>
 
-          <form id="consultForm" action="https://formspree.io/f/xdengvqb" method="POST">
+          <form id="consultForm" action="https://formspree.io/f/xdengvqb" method="POST" onsubmit="return false;">
             <input type="hidden" name="_subject" value="[법률사무소 후성] 부천 채권추심 신규 상담">
             <input type="hidden" name="유입페이지" value="부천채권추심 랜딩페이지">
 
@@ -393,7 +393,7 @@
               <span><b>개인정보 수집·이용에 동의합니다.</b><br>상담 접수 및 연락을 위해 성함, 연락처, 상담내용을 수집하며 상담 목적 범위에서 이용합니다.</span>
             </label>
 
-            <button class="submit" type="submit" id="submitBtn">상담 신청하기</button>
+            <button class="submit" type="button" id="submitBtn">상담 신청하기</button>
             <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
             <p class="form-note">상담 신청만으로 변호사 선임계약이 체결되는 것은 아닙니다.</p>
           </form>
@@ -441,9 +441,8 @@
       });
 
      
-        form.addEventListener('submit', async function(e) {
-  e.preventDefault();
-
+        button.addEventListener('click', async function() {
+  
   if (!form.checkValidity()) {
     form.reportValidity();
     return;
