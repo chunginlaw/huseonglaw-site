@@ -346,8 +346,7 @@
           <h3>무료 상담 신청</h3>
           <p class="lead">필수 항목만 입력하셔도 접수할 수 있습니다.</p>
 
-          <form id="consultForm" action="https://formspree.io/f/xnpaqdew" method="POST" target="formspree_sink">
-            <iframe name="formspree_sink" id="formspree_sink" title="상담접수 전송" style="display:none"></iframe>
+          <form id="consultForm" action="https://formspree.io/f/xnpaqdew" method="POST">
             <input type="hidden" name="_subject" value="[법률사무소 후성] 부천 채권추심 신규 상담">
             <input type="hidden" name="유입페이지" value="부천채권추심 랜딩페이지">
 
@@ -428,66 +427,98 @@
       wcs_do();
     }
   </script>
+<script>
+(function () {
+  const form = document.getElementById('consultForm');
+  const status = document.getElementById('formStatus');
+  const button = document.getElementById('submitBtn');
+  const amount = document.getElementById('amount');
+  const phone = document.getElementById('phone');
 
-  <script>
-    (function() {
-      const form = document.getElementById('consultForm');
-      const status = document.getElementById('formStatus');
-      const button = document.getElementById('submitBtn');
-      const amount = document.getElementById('amount');
-      const phone = document.getElementById('phone');
-      const sink = document.getElementById('formspree_sink');
-      let submitted = false;
+  if (amount) {
+    amount.addEventListener('input', function () {
+      const raw = this.value.replace(/[^0-9]/g, '');
+      this.value = raw ? Number(raw).toLocaleString('ko-KR') + '원' : '';
+    });
+  }
 
-      amount.addEventListener('input', function() {
-        const raw = this.value.replace(/[^0-9]/g, '');
-        this.value = raw ? Number(raw).toLocaleString('ko-KR') + '원' : '';
-      });
+  if (phone) {
+    phone.addEventListener('input', function () {
+      let v = this.value.replace(/[^0-9]/g, '').slice(0, 11);
 
-      phone.addEventListener('input', function() {
-        let v = this.value.replace(/[^0-9]/g, '').slice(0, 11);
-        if (v.length <= 3) this.value = v;
-        else if (v.length <= 7) this.value = v.slice(0, 3) + '-' + v.slice(3);
-        else this.value = v.slice(0, 3) + '-' + v.slice(3, 7) + '-' + v.slice(7);
-      });
+      if (v.length <= 3) {
+        this.value = v;
+      } else if (v.length <= 7) {
+        this.value = v.slice(0, 3) + '-' + v.slice(3);
+      } else {
+        this.value =
+          v.slice(0, 3) + '-' +
+          v.slice(3, 7) + '-' +
+          v.slice(7);
+      }
+    });
+  }
 
-      form.addEventListener('submit', function(e) {
-        if (!form.checkValidity()) {
-          e.preventDefault();
-          form.reportValidity();
-          return;
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = '접수 중입니다...';
+    status.className = 'form-status';
+    status.textContent = '';
+
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+          'Accept': 'application/json'
         }
-
-        submitted = true;
-        button.disabled = true;
-        button.textContent = '접수 중입니다...';
-        status.className = 'form-status';
-        status.textContent = '';
       });
 
-      sink.addEventListener('load', function() {
-        if (!submitted) return;
+      if (!response.ok) {
+        throw new Error('Formspree 전송 실패: ' + response.status);
+      }
 
-        status.textContent = '상담 신청이 완료되었습니다. 확인 후 연락드리겠습니다.';
-        status.className = 'form-status success';
-        button.textContent = '상담 신청 완료';
-        button.disabled = true;
-        form.reset();
+      status.textContent =
+        '상담 신청이 완료되었습니다. 확인 후 연락드리겠습니다.';
+      status.className = 'form-status success';
 
-        // 상담 신청이 실제 완료된 시점에 네이버 전환(lead) 이벤트 전송
-        if (window.wcs) {
-          var _conv = {};
-          _conv.type = "lead";
-          wcs.trans(_conv);
-        }
+      button.textContent = '상담 신청 완료';
+      button.disabled = true;
 
-        submitted = false;
+      form.reset();
 
-        setTimeout(function() {
-          status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 50);
+      if (window.wcs) {
+        var _conv = {};
+        _conv.type = 'lead';
+        wcs.trans(_conv);
+      }
+
+    } catch (error) {
+      console.error(error);
+
+      status.textContent =
+        '상담 신청 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+      status.className = 'form-status error';
+
+      button.disabled = false;
+      button.textContent = '상담 신청하기';
+    }
+
+    setTimeout(function () {
+      status.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest'
       });
-    })();
-  </script>
+    }, 50);
+  });
+})();
+</script>  
 </body>
 </html>
