@@ -1,0 +1,18 @@
+{
+  "name": "huseong-ad-visit",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-23",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "observability": { "enabled": false },
+  "vars": { "COLLECTION_ENABLED": "false", "RETENTION_DAYS": "7" },
+  "triggers": { "crons": ["*/15 * * * *"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "huseong-ad-visit",
+      "database_id": "00000000-0000-4000-8000-000000000000"
+    }
+  ]
+}
